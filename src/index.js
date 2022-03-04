@@ -1,6 +1,5 @@
 import Fuse from 'fuse.js'
 
-
 const gradeGetter = (score)=> {
   let grade = ''
   if (score === null){
@@ -17,6 +16,7 @@ const gradeGetter = (score)=> {
   }
   return grade
 }
+
 function GetElementsByExactClassName(someclass) {
   var i, length, elementlist, data = [];
 
@@ -32,12 +32,31 @@ function GetElementsByExactClassName(someclass) {
   }
   // Return the result
   return data;
-} // GetElementsByExactClassName
+} 
+
+//Get title fro tooltips
+const getTitle=(grade)=> {
+  if(grade === 'A'){
+    return "GRADE A: The restaurant is clean, up to code, and free of violations"
+  }
+  else if(grade === 'B'){
+    return "GRADE B: The restaurant has some issues that must be fixed"
+  }
+  else if(grade === 'C'){
+    return "GRADE C: The restaurant is a public risk and on verge of closure"
+  }    
+    return "GRADE PENDING: There is no data about this restaurant in database"
+}
+
+//inject HTML Element
 const init = function(grade){
-  const host = GetElementsByExactClassName('s-col-xs u-inset-3 u-text-right')
+  const host = GetElementsByExactClassName('restaurantInfo-container--redesign u-flex u-flex-justify-xs--left')
   const injectionEle = document.createElement('div')
   injectionEle.className = 'grade'
-  injectionEle.innerHTML = `<img style="margin-top: 5px; margin-right: 5px" src=${chrome.extension.getURL(`./img/grade-${grade}.png`)} />`
+  injectionEle.innerHTML = `
+  <img style="margin-right: 5px"
+   src=${chrome.extension.getURL(`./img/grade-${grade}.png`)} 
+   title='${getTitle(grade)}' />`
   console.log("host", host)
   host ? host[0].appendChild(injectionEle) : ''
 }
