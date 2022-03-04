@@ -17,8 +17,9 @@
         "scripts": ["background.js"],
         "persistent": false
     },
+    "web_accessible_resources": ["img/*.gif", "img/*.png"],
     "content_scripts":[{
         "matches" : ["<all_urls>"],
         "js": ["background.js"]
-      }]
+    }]
 }

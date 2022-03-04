@@ -34,7 +34,7 @@ function createCommandObject(){
 // document.querySelector('.get-command').addEventListener('click', function(){
 //   createCommandObject()
 // })
-var el = document.querySelector('.get-command')
+const el = document.querySelector('.get-command')
 if(el){
 el.addEventListener('click', function(){
   createCommandObject()

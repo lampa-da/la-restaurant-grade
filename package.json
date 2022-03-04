@@ -44,10 +44,12 @@
                 "name": "background",
                 "src": "./src/**/*.js"
             }
+        ],
+        "copyAsIs": [
+            "./src/img/*"
         ]
     },
     "dependencies": {
-        "fuse.js": "^6.5.3",
-        "fuzzy-search": "^3.2.1"
+        "fuse.js": "^6.5.3"
     }
 }

@@ -1791,227 +1791,6 @@ Fuse.config = Config;
 
 
 
-/***/ }),
-
-/***/ "./node_modules/fuzzy-search/src/FuzzySearch.js":
-/*!******************************************************!*\
-  !*** ./node_modules/fuzzy-search/src/FuzzySearch.js ***!
-  \******************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ FuzzySearch)
-/* harmony export */ });
-/* harmony import */ var _Helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Helper */ "./node_modules/fuzzy-search/src/Helper.js");
-
-
-class FuzzySearch {
-  constructor(haystack = [], keys = [], options = {}) {
-    if (! Array.isArray(keys)) {
-      options = keys;
-      keys = [];
-    }
-
-    this.haystack = haystack;
-    this.keys = keys;
-    this.options = Object.assign({
-      caseSensitive: false,
-      sort: false,
-    }, options);
-  }
-
-  search(query = '') {
-    if (query === '') {
-      return this.haystack;
-    }
-
-    const results = [];
-
-    for (let i = 0; i < this.haystack.length; i++) {
-      const item = this.haystack[i];
-
-      if (this.keys.length === 0) {
-        const score = FuzzySearch.isMatch(item, query, this.options.caseSensitive);
-
-        if (score) {
-          results.push({ item, score });
-        }
-      } else {
-        for (let y = 0; y < this.keys.length; y++) {
-          const propertyValues = _Helper__WEBPACK_IMPORTED_MODULE_0__["default"].getDescendantProperty(item, this.keys[y]);
-
-          let found = false;
-
-          for (let z = 0; z < propertyValues.length; z++) {
-            const score = FuzzySearch.isMatch(propertyValues[z], query, this.options.caseSensitive);
-
-            if (score) {
-              found = true;
-
-              results.push({ item, score });
-
-              break;
-            }
-          }
-
-          if (found) {
-            break;
-          }
-        }
-      }
-    }
-
-    if (this.options.sort) {
-      results.sort((a, b) => a.score - b.score);
-    }
-
-    return results.map(result => result.item);
-  }
-
-  static isMatch(item, query, caseSensitive) {
-    item = String(item);
-    query = String(query);
-
-    if (! caseSensitive) {
-      item = item.toLocaleLowerCase();
-      query = query.toLocaleLowerCase();
-    }
-
-    const indexes = FuzzySearch.nearestIndexesFor(item, query);
-
-    if (! indexes) {
-      return false;
-    }
-
-    // Exact matches should be first.
-    if (item === query) {
-      return 1;
-    }
-
-    // If we have more than 2 letters, matches close to each other should be first.
-    if (indexes.length > 1) {
-      return 2 + (indexes[indexes.length - 1] - indexes[0]);
-    }
-
-    // Matches closest to the start of the string should be first.
-    return 2 + indexes[0];
-  }
-
-  static nearestIndexesFor(item, query) {
-    const letters = query.split('');
-    let indexes = [];
-
-    const indexesOfFirstLetter = FuzzySearch.indexesOfFirstLetter(item, query);
-
-    indexesOfFirstLetter.forEach((startingIndex, loopingIndex) => {
-      let index = startingIndex + 1;
-
-      indexes[loopingIndex] = [startingIndex];
-
-      for (let i = 1; i < letters.length; i++) {
-        const letter = letters[i];
-
-        index = item.indexOf(letter, index);
-
-        if (index === -1) {
-          indexes[loopingIndex] = false;
-
-          break;
-        }
-
-        indexes[loopingIndex].push(index);
-
-        index++;
-      }
-    });
-
-    indexes = indexes.filter(letterIndexes => letterIndexes !== false);
-
-    if (! indexes.length) {
-      return false;
-    }
-
-    return indexes.sort((a, b) => {
-      if (a.length === 1) {
-        return a[0] - b[0];
-      }
-
-      a = a[a.length - 1] - a[0];
-      b = b[b.length - 1] - b[0];
-
-      return a - b;
-    })[0];
-  }
-
-  static indexesOfFirstLetter(item, query) {
-    const match = query[0];
-
-    return item.split('').map((letter, index) => {
-      if (letter !== match) {
-        return false;
-      }
-
-      return index;
-    }).filter(index => index !== false);
-  }
-}
-
-
-/***/ }),
-
-/***/ "./node_modules/fuzzy-search/src/Helper.js":
-/*!*************************************************!*\
-  !*** ./node_modules/fuzzy-search/src/Helper.js ***!
-  \*************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ Helper)
-/* harmony export */ });
-class Helper {
-  static getDescendantProperty(object, path, list = []) {
-    let firstSegment;
-    let remaining;
-    let dotIndex;
-    let value;
-    let index;
-    let length;
-
-    if (path) {
-      dotIndex = path.indexOf('.');
-
-      if (dotIndex === -1) {
-        firstSegment = path;
-      } else {
-        firstSegment = path.slice(0, dotIndex);
-        remaining = path.slice(dotIndex + 1);
-      }
-
-      value = object[firstSegment];
-      if (value !== null && typeof value !== 'undefined') {
-        if (! remaining && (typeof value === 'string' || typeof value === 'number')) {
-          list.push(value);
-        } else if (Object.prototype.toString.call(value) === '[object Array]') {
-          for (index = 0, length = value.length; index < length; index++) {
-            Helper.getDescendantProperty(value[index], remaining, list);
-          }
-        } else if (remaining) {
-          Helper.getDescendantProperty(value, remaining, list);
-        }
-      }
-    } else {
-      list.push(object);
-    }
-
-    return list;
-  }
-}
-
-
 /***/ })
 
 /******/ 	});
@@ -2112,7 +1891,7 @@ function createCommandObject(){
 // document.querySelector('.get-command').addEventListener('click', function(){
 //   createCommandObject()
 // })
-var el = document.querySelector('.get-command')
+const el = document.querySelector('.get-command')
 if(el){
 el.addEventListener('click', function(){
   createCommandObject()
@@ -2144,16 +1923,55 @@ el.addEventListener('click', function(){
   \**********************/
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var fuse_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! fuse.js */ "./node_modules/fuse.js/dist/fuse.esm.js");
-const FuzzySearch = __webpack_require__(/*! fuzzy-search */ "./node_modules/fuzzy-search/src/FuzzySearch.js")
-;
 
+
+
+const gradeGetter = (score)=> {
+  let grade = ''
+  if (score === null){
+    grade = 'NA'
+  }
+  else if(score > 89 && score < 101){
+    grade = 'A'
+  }
+  else if(score > 79 && score < 90){
+    grade = 'B'
+  }
+  else if(score > 69 && score < 80){
+    grade = 'C'
+  }
+  return grade
+}
+function GetElementsByExactClassName(someclass) {
+  var i, length, elementlist, data = [];
+
+  // Get the list from the browser
+  elementlist = document.getElementsByClassName(someclass);
+  if (!elementlist || !(length = elementlist.length))
+    return [];
+
+  // Limit by elements with that specific class name only
+  for (i = 0; i < length; i++) {
+    if (elementlist[i].className == someclass)
+      data.push(elementlist[i]);
+  }
+  // Return the result
+  return data;
+} // GetElementsByExactClassName
+const init = function(grade){
+  const host = GetElementsByExactClassName('s-col-xs u-inset-3 u-text-right')
+  const injectionEle = document.createElement('div')
+  injectionEle.className = 'grade'
+  injectionEle.innerHTML = `<img style="margin-top: 5px; margin-right: 5px" src=${chrome.extension.getURL(`./img/grade-${grade}.png`)} />`
+  console.log("host", host)
+  host ? host[0].appendChild(injectionEle) : ''
+}
 
 chrome.runtime.onMessage.addListener((msg, sender, response)=>{
   // console.log('msg',msg)
   if(msg.command == 'singlePage'){
     let restData  = msg.data
     console.log('restData',restData)
-    const apiKey = "rr6b6je2uzib2eh55g8r6by9"
     const fetchReq1 = fetch(
       'https://data.lacounty.gov/resource/6ni6-h5kp.json?facility_name='+restData.facility_name+'&$$app_token=JvrAiDKLf9NSEMqBiRG4WbsXW')
       .then((res) => res.json())
@@ -2169,25 +1987,36 @@ chrome.runtime.onMessage.addListener((msg, sender, response)=>{
       let restByAddressData = res[1]
       console.log("restByNameData",restByNameData)
       console.log("restByAddressData",restByAddressData)
-    const restaurants = restByNameData
-    const searcher = new fuse_js__WEBPACK_IMPORTED_MODULE_0__["default"](restaurants, ['facility_name'], {
-      caseSensitive: true,
-    });
-    console.log('seacher', seacher);
-    const result = searcher.search(`${restData.facility_name}`);
-    console.log("result", result)
+      const restaurants = restByNameData
+      const fuse = new fuse_js__WEBPACK_IMPORTED_MODULE_0__["default"](restaurants,  {
+        includeMatches: true,
+        keys: [
+          "facility_address",
+        ]
+      });
+      const pattern = restData.facility_address
+      const result = fuse.search(pattern);
+      console.log("result", result)
+
+      let restWithLastActivityDate = result.filter(e => (String(new Date(e.item.activity_date)) === String(new Date(Math.max(...result.map(e => new Date(e.item.activity_date)))))));
+      console.log('restWithLastActivityDate', restWithLastActivityDate)
+
+      let score = restWithLastActivityDate.length ? restWithLastActivityDate[0].item.score : null
+      console.log('score', score)
+      let grade = gradeGetter(score)
+      console.log("grade", grade)
+      init(grade)
     });
   }
   return true
 })
 
-const init = function(){
-  const injectionEle = document.createElement('div')
-  injectionEle.className = 'blabla'
-  injectionEle.innerHTML = "hello!"
-  document.body.appendChild(injectionEle)
-}
-init
+
+
+
+// $("#display").append('<img src="/templates/image.gif" alt="red" width="30" height="30" />');
+// $("#display").append('<img src="/templates/image.gif alt="red" width="30" height="30" " />');
+
 
 })();
 

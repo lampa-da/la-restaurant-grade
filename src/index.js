@@ -1,13 +1,52 @@
-const FuzzySearch = require('fuzzy-search')
 import Fuse from 'fuse.js'
 
+
+const gradeGetter = (score)=> {
+  let grade = ''
+  if (score === null){
+    grade = 'NA'
+  }
+  else if(score > 89 && score < 101){
+    grade = 'A'
+  }
+  else if(score > 79 && score < 90){
+    grade = 'B'
+  }
+  else if(score > 69 && score < 80){
+    grade = 'C'
+  }
+  return grade
+}
+function GetElementsByExactClassName(someclass) {
+  var i, length, elementlist, data = [];
+
+  // Get the list from the browser
+  elementlist = document.getElementsByClassName(someclass);
+  if (!elementlist || !(length = elementlist.length))
+    return [];
+
+  // Limit by elements with that specific class name only
+  for (i = 0; i < length; i++) {
+    if (elementlist[i].className == someclass)
+      data.push(elementlist[i]);
+  }
+  // Return the result
+  return data;
+} // GetElementsByExactClassName
+const init = function(grade){
+  const host = GetElementsByExactClassName('s-col-xs u-inset-3 u-text-right')
+  const injectionEle = document.createElement('div')
+  injectionEle.className = 'grade'
+  injectionEle.innerHTML = `<img style="margin-top: 5px; margin-right: 5px" src=${chrome.extension.getURL(`./img/grade-${grade}.png`)} />`
+  console.log("host", host)
+  host ? host[0].appendChild(injectionEle) : ''
+}
 
 chrome.runtime.onMessage.addListener((msg, sender, response)=>{
   // console.log('msg',msg)
   if(msg.command == 'singlePage'){
     let restData  = msg.data
     console.log('restData',restData)
-    const apiKey = "rr6b6je2uzib2eh55g8r6by9"
     const fetchReq1 = fetch(
       'https://data.lacounty.gov/resource/6ni6-h5kp.json?facility_name='+restData.facility_name+'&$$app_token=JvrAiDKLf9NSEMqBiRG4WbsXW')
       .then((res) => res.json())
@@ -23,22 +62,33 @@ chrome.runtime.onMessage.addListener((msg, sender, response)=>{
       let restByAddressData = res[1]
       console.log("restByNameData",restByNameData)
       console.log("restByAddressData",restByAddressData)
-    const restaurants = restByNameData
-    const searcher = new Fuse(restaurants, ['facility_name'], {
-      caseSensitive: true,
-    });
-    console.log('seacher', seacher);
-    const result = searcher.search(`${restData.facility_name}`);
-    console.log("result", result)
+      const restaurants = restByNameData
+      const fuse = new Fuse(restaurants,  {
+        includeMatches: true,
+        keys: [
+          "facility_address",
+        ]
+      });
+      const pattern = restData.facility_address
+      const result = fuse.search(pattern);
+      console.log("result", result)
+
+      let restWithLastActivityDate = result.filter(e => (String(new Date(e.item.activity_date)) === String(new Date(Math.max(...result.map(e => new Date(e.item.activity_date)))))));
+      console.log('restWithLastActivityDate', restWithLastActivityDate)
+
+      let score = restWithLastActivityDate.length ? restWithLastActivityDate[0].item.score : null
+      console.log('score', score)
+      let grade = gradeGetter(score)
+      console.log("grade", grade)
+      init(grade)
     });
   }
   return true
 })
 
-const init = function(){
-  const injectionEle = document.createElement('div')
-  injectionEle.className = 'blabla'
-  injectionEle.innerHTML = "hello!"
-  document.body.appendChild(injectionEle)
-}
-init
+
+
+
+// $("#display").append('<img src="/templates/image.gif" alt="red" width="30" height="30" />');
+// $("#display").append('<img src="/templates/image.gif alt="red" width="30" height="30" " />');
+
