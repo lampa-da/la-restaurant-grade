@@ -17,7 +17,7 @@ const gradeGetter = (score)=> {
   return grade
 }
 
-function GetElementsByExactClassName(someclass) {
+export function GetElementsByExactClassName(someclass) {
   var i, length, elementlist, data = [];
 
   // Get the list from the browser
@@ -101,6 +101,9 @@ chrome.runtime.onMessage.addListener((msg, sender, response)=>{
       console.log("grade", grade)
       init(grade)
     });
+    if(msg.command == 'notGrubhub'){
+      alert("your url contains the name franky");
+    }
   }
   return true
 })

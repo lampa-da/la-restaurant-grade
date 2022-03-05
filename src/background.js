@@ -1,3 +1,4 @@
+import  {GetElementsByExactClassName} from "./index"
 
 function getNameFromTitle(title){
   return title.split(' Delivery Menu |')[0].toUpperCase()
@@ -14,13 +15,15 @@ function createCommandObject(){
     console.log("activeTab", activeTab)
     let pageTitle = activeTab.title 
     let data = {}
-    if(pageTitle ===  "Search Results"){
-      console.log('main page')
+    if(!activeTab.url){
+      console.log('this is not Grubhub')
+      chrome.tabs.sendMessage(activeTab.id, {command: "notGrubhub", data: data})
     }
     else{
-      console.log('other pages')
+      console.log('this is Grubhub')
       let facility_name = getNameFromTitle(pageTitle)
       let facility_address = getAddressFromTitle(pageTitle)
+      
       console.log('name', facility_name)
       console.log('address', facility_address)
       data.facility_name = facility_name
@@ -31,36 +34,16 @@ function createCommandObject(){
   })
 }
 
-// document.querySelector('.get-command').addEventListener('click', function(){
-//   createCommandObject()
-// })
-const el = document.querySelector('.get-command')
-if(el){
-el.addEventListener('click', function(){
-  createCommandObject()
+
+chrome.tabs.onUpdated.addListener( function (tabId, changeInfo, tab) {
+  if (tab.status == 'complete' 
+    && tab.title !== "Prepare your taste buds..." 
+    && tab.title !== "Food Delivery | Restaurant Takeout | Order Food Online | Grubhub") {
+    console.log("tab", tab)
+    createCommandObject()
+  }
 })
-}
-
-
-// chrome.tabs.onUpdated.addListener( function (tabId, changeInfo, tab) {
-//   if (changeInfo.status == 'complete' && tab.active) {
-
-//     // do your things
-
-//   }
-// })
 
 
 
-// chrome.tab.onUpdated.addEventListener(function(tabId, changeInfo, tab){
-//   console.log('111111111')
-//   if(changeInfo.url){
-//     console.log('222222222')
-//     createCommandObject()
-//     console.log('333333333')
-//     chrome.tabs.executeScript({
-//       file: 'contentScript.js'
-//     })
-//   }
-// })
 
